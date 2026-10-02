@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexum - Free Education Platform</title>
+
+  <!-- Google Fonts: Geist & Silkscreen -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Geist', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            silkscreen: ['Silkscreen', 'cursive'],
+          },
+          colors: {
+            brandDark: '#010101'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18, ReactDOM & Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    /* Custom Scrollbar for Dashboard */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body class="antialiased bg-brandDark text-white selection:bg-white selection:text-black">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- TRANSLATION DICTIONARY SYSTEM ---
+    const defaultTranslations = {
+      en: {
+        brand: "nexum",
+        tagline: "Fast-track your learning by boosting with Nexum",
+        subtext: "We focus on learning rather than money. Make your study and future bright.",
+        getStarted: "Get started",
+        login: "Log in",
+        signup: "Sign up",
+        modules: "Modules",
+        coursesTab: "Courses",
+        solutions: "Solutions",
+        pricing: "Pricing",
+        statsNumber: "42,500+",
+        statsText: "Students rely on Nexum daily to enhance their learning and assignments.",
+        quote: "With Nexum we went from struggling with complex topics to having AI tutors that guide us through everything.",
+        studentRole: "Computer Science Student",
+        selectTrackTitle: "Select Your Study Track",
+        selectTrackSub: "Choose your level to get customized courses, live classes, notes, and AI tools—100% Free.",
+        freeBadge: "100% FREE EDUCATION",
+        dashOverview: "Dashboard Overview",
+        changeTrack: "Change Track",
+        tabCourses: "Courses & Materials",
+        tabClasses: "Online Live Classes",
+        tabAiTools: "AI for Study Hub",
+        tabChatbot: "Nexum AI Tutor",
+        tabCalendar: "Calendar & Attendance",
+        tabScoreboard: "Scoreboard & Progress",
+        downloadSyllabus: "Download Syllabus & PDF Notes",
+        joinLive: "Join Live Class",
+        watchRecorded: "Watch Recording",
+        askAi: "Ask Nexum AI anything about your studies...",
+        attendanceRate: "Attendance Rate",
+        nextExam: "Next Board Exam in",
+        customLangPrompt: "Enter language code (e.g. 'de' or 'ja') and title:"
+      },
+      ne: {
+        brand: "नेक्सम",
+        tagline: "नेक्समको साथ आफ्नो सिकाइलाई द्रुत र प्रभावकारी बनाउनुहोस्",
+        subtext: "हामी पैसा भन्दा सिकाइमा ध्यान दिन्छौं। आफ्नो अध्ययन र भविष्य उज्ज्वल बनाउनुहोस्।",
+        getStarted: "सुरु गर्नुहोस्",
+        login: "लग इन",
+        signup: "साइन अप",
+        modules: "मोड्युलहरू",
+        coursesTab: "पाठ्यक्रमहरू",
+        solutions: "समाधानहरू",
+        pricing: "मूल्य निर्धारण",
+        statsNumber: "४२,५००+",
+        statsText: "विद्यार्थीहरू आफ्नो अध्ययन र गृहकार्य सुधार गर्न दैनिक नेक्सममा निर्भर छन्।",
+        quote: "नेक्समको साथ, हामी जटिल विषयहरूमा संघर्ष गर्नुको सट्टा सबै कुरा सिकाउने AI ट्यूटरहरू प्राप्त गर्दछौं।",
+        studentRole: "कम्प्यूटर विज्ञान विद्यार्थी",
+        selectTrackTitle: "आफ्नो अध्ययन संकाय छान्नुहोस्",
+        selectTrackSub: "अनुकूलित पाठ्यक्रमहरू, प्रत्यक्ष कक्षाहरू, नोटहरू र AI उपकरणहरू प्राप्त गर्न आफ्नो तह छान्नुहोस्—१००% नि:शुल्क।",
+        freeBadge: "१००% नि:शुल्क शिक्षा",
+        dashOverview: "ड्यासबोर्ड अवलोकन",
+        changeTrack: "संकाय फेर्नुहोस्",
+        tabCourses: "पाठ्यक्रम र सामाग्रीहरू",
+        tabClasses: "अनलाइन प्रत्यक्ष कक्षाहरू",
+        tabAiTools: "अध्ययनका लागि AI हब",
+        tabChatbot: "नेक्सम AI शिक्षक",
+        tabCalendar: "क्यालेन्डर र उपस्थिति",
+        tabScoreboard: "स्कोरबोर्ड र प्रगति",
+        downloadSyllabus: "पाठ्यक्रम र PDF नोटहरू डाउनलोड गर्नुहोस्",
+        joinLive: "प्रत्यक्ष कक्षामा जोडिनुहोस्",
+        watchRecorded: "रेकर्ड गरिएको कक्षा हेर्नुहोस्",
+        askAi: "आफ्नो पढाइको बारेमा नेक्सम AI लाई सोध्नुहोस्...",
+        attendanceRate: "उपस्थिति दर",
+        nextExam: "अघिल्लो बोर्ड परीक्षा बाँकी",
+        customLangPrompt: "भाषा कोड (जस्तै 'de' वा 'ja') र शीर्षक प्रविष्ट गर्नुहोस्:"
+      },
+      hi: {
+        brand: "नेक्सम",
+        tagline: "नेक्सम के साथ अपनी पढ़ाई को तेज और बेहतर बनाएं",
+        subtext: "हम पैसों से ज्यादा पढ़ाई पर ध्यान देते हैं। अपनी पढ़ाई और भविष्य को उज्ज्वल बनाएं।",
+        getStarted: "शुरू करें",
+        login: "लॉग इन",
+        signup: "साइन अप",
+        modules: "मॉड्यूल",
+        coursesTab: "पाठ्यक्रम",
+        solutions: "समाधान",
+        pricing: "मूल्य निर्धारण",
+        statsNumber: "42,500+",
+        statsText: "छात्र अपनी पढ़ाई को बेहतर बनाने के लिए रोजाना नेक्सम का उपयोग करते हैं।",
+        quote: "नेक्सम के साथ कठिन विषयों को समझना बहुत आसान हो गया है। AI ट्यूटर हर समय मार्गदर्शन करते हैं।",
+        studentRole: "कंप्यूटर साइंस छात्र",
+        selectTrackTitle: "अपनी अध्ययन श्रेणी चुनें",
+        selectTrackSub: "कस्टमाइज्ड कोर्स, लाइव क्लासेस और AI टूल्स प्राप्त करने के लिए अपना स्तर चुनें—100% बिल्कुल मुफ्त।",
+        freeBadge: "100% मुफ्त शिक्षा",
+        dashOverview: "डैशबोर्ड अवलोकन",
+        changeTrack: "श्रेणी बदलें",
+        tabCourses: "पाठ्यक्रम और सामग्री",
+        tabClasses: "ऑनलाइन लाइव क्लास",
+        tabAiTools: "AI अध्ययन केंद्र",
+        tabChatbot: "नेक्सम AI ट्यूटर",
+        tabCalendar: "कैलेंडर और उपस्थिति",
+        tabScoreboard: "स्कोरबोर्ड और प्रगति",
+        downloadSyllabus: "पाठ्यक्रम और पीडीएफ नोट्स डाउनलोड करें",
+        joinLive: "लाइव क्लास से जुड़ें",
+        watchRecorded: "रिकॉर्डेड क्लास देखें",
+        askAi: "अपनी पढ़ाई के बारे में नेक्सम AI से कुछ भी पूछें...",
+        attendanceRate: "उपस्थिति दर",
+        nextExam: "अगली बोर्ड परीक्षा",
+        customLangPrompt: "भाषा कोड (जैसे 'de' या 'ja') दर्ज करें:"
+      },
+      es: {
+        brand: "nexum",
+        tagline: "Acelera tu aprendizaje potenciándote con Nexum",
+        subtext: "Nos enfocamos en el aprendizaje más que en el dinero. Haz tu futuro brillante.",
+        getStarted: "Empezar",
+        login: "Iniciar sesión",
+        signup: "Registrarse",
+        modules: "Módulos",
+        coursesTab: "Cursos",
+        solutions: "Soluciones",
+        pricing: "Precios",
+        statsNumber: "42,500+",
+        statsText: "Estudiantes confían en Nexum diariamente para mejorar sus estudios.",
+        quote: "Con Nexum pasamos de luchar con temas complejos a tener tutores de IA que nos guían.",
+        studentRole: "Estudiante de Ciencias de la Computación",
+        selectTrackTitle: "Selecciona tu Carrera / Nivel",
+        selectTrackSub: "Obtén cursos personalizados, clases en vivo y herramientas de IA—100% Gratis.",
+        freeBadge: "EDUCACIÓN 100% GRATIS",
+        dashOverview: "Resumen del Panel",
+        changeTrack: "Cambiar Carrera",
+        tabCourses: "Cursos y Materiales",
+        tabClasses: "Clases en Vivo",
+        tabAiTools: "Hub de IA para Estudiar",
+        tabChatbot: "Tutor IA Nexum",
+        tabCalendar: "Calendario y Asistencia",
+        tabScoreboard: "Tabla de Clasificación",
+        downloadSyllabus: "Descargar Temario y Notas PDF",
+        joinLive: "Unirse a Clase en Vivo",
+        watchRecorded: "Ver Grabación",
+        askAi: "Pregunta lo que sea a Nexum IA...",
+        attendanceRate: "Tasa de Asistencia",
+        nextExam: "Próximo Examen en",
+        customLangPrompt: "Introduce el código del idioma:"
+      }
+    };
+
+    // --- STUDY TRACKS DATA (BLE, SEE, SLC, MBBS, etc.) ---
+    const studyTracks = [
+      { id: 'ble', title: 'BLE (Class 8)', icon: '📘', desc: 'Basic Level Examination curriculum, practice papers & notes.' },
+      { id: 'see', title: 'SEE (Class 10)', icon: '🎓', desc: 'Secondary Education Exam prep, compulsory & optional subjects.' },
+      { id: 'slc', title: 'SLC / Class 12 (+2)', icon: '🏛️', desc: 'Higher secondary board preparations, science, management & arts.' },
+      { id: 'mbbs', title: 'MBBS / Medical Entrance', icon: '🩺', desc: 'Anatomy, Physiology, CEE entrance mocks & high-yield notes.' },
+      { id: 'be', title: 'Engineering (BE/BTech)', icon: '⚙️', desc: 'Computer, Civil, Electrical engineering video lectures & solutions.' },
+      { id: 'bbs', title: 'BBS / BBA (Management)', icon: '📊', desc: 'Accounting, Finance, Economics & business management modules.' },
+      { id: 'csit', title: 'BSc CSIT / BCA / IT', icon: '💻', desc: 'Data structures, Web dev, AI fundamentals, C/C++ & Java guides.' },
+      { id: 'alevel', title: 'A-Levels (Cambridge)', icon: '🌐', desc: 'AS & A2 Level past papers, topical mark schemes & revision notes.' },
+      { id: 'law', title: 'BALLB / Law Entrance', icon: '⚖️', desc: 'Jurisprudence, Constitutional law, case studies & mock exams.' },
+      { id: 'ca', title: 'CA / ACCA Foundation', icon: '📈', desc: 'Financial accounting, Auditing, Corporate Law & tax modules.' },
+      { id: 'highschool', title: 'High School (K-12)', icon: '🏫', desc: 'General Math, Science, English Literature & history guides.' },
+      { id: 'competitive', title: 'Loksewa / Public Service', icon: '📝', desc: 'GK, IQ, Constitution & competitive examination preparation.' }
+    ];
+
+    // --- SUBJECTS DATA PER TRACK ---
+    const trackSubjects = {
+      ble: [
+        { name: 'Compulsory Mathematics', code: 'BLE-101', notes: 'Algebra, Geometry & Mensuration formulas PDF' },
+        { name: 'Science & Technology', code: 'BLE-102', notes: 'Physics diagrams & Chemistry periodic table notes' },
+        { name: 'English Grammar & Essay', code: 'BLE-103', notes: 'Model questions & grammar rules handbook' },
+        { name: 'Social Studies & Population', code: 'BLE-104', notes: 'History timeline & geography summaries' }
+      ],
+      see: [
+        { name: 'Compulsory Science', code: 'SEE-201', notes: 'Complete 25 chapter numerical solved workbook' },
+        { name: 'Compulsory Mathematics', code: 'SEE-202', notes: 'Theorem proofs & geometry quick revision sheet' },
+        { name: 'Optional Mathematics', code: 'SEE-203', notes: 'Trigonometry, Vector & Coordinate geometry solutions' },
+        { name: 'Computer Science', code: 'SEE-204', notes: 'QBASIC, HTML & Database past 10-year papers' }
+      ],
+      slc: [
+        { name: 'Physics (+2 Class 12)', code: 'PHY-12', notes: 'Modern Physics & Electromagnetism derivation sheets' },
+        { name: 'Chemistry (+2 Class 12)', code: 'CHE-12', notes: 'Organic Chemistry reaction mechanisms cheat sheet' },
+        { name: 'Mathematics (+2 Class 12)', code: 'MAT-12', notes: 'Calculus, Integration & Differential equations PDF' },
+        { name: 'Computer Science', code: 'CS-12', notes: 'C Programming, OOP & Networking complete modules' }
+      ],
+      mbbs: [
+        { name: 'Human Anatomy & Histology', code: 'MED-501', notes: '3D Anatomical charts & organ system revision slides' },
+        { name: 'Physiology & Biochemistry', code: 'MED-502', notes: 'Metabolic pathways & physiological mechanism guides' },
+        { name: 'Pharmacology', code: 'MED-503', notes: 'Drug classification & clinical dosage tables' },
+        { name: 'CEE Medical Entrance Mocks', code: 'CEE-MOCK', notes: '2000+ High-yield MCQs with detailed explanations' }
+      ],
+      be: [
+        { name: 'Data Structures & Algorithms', code: 'BE-301', notes: 'C++ implementations & complexity analysis notes' },
+        { name: 'Engineering Mathematics III', code: 'BE-302', notes: 'Laplace transform, Fourier series & matrices' },
+        { name: 'Object Oriented Programming', code: 'BE-303', notes: 'Java OOP concepts, inheritance & polymorphism codes' },
+        { name: 'Database Management System', code: 'BE-304', notes: 'SQL queries, Normalization (1NF-3NF) & ER Diagrams' }
+      ],
+      default: [
+        { name: 'Core Foundations & Syllabus', code: 'GEN-01', notes: 'Complete subject outline & past question papers' },
+        { name: 'Advanced Theory & Practical', code: 'GEN-02', notes: 'Comprehensive chapterwise PDF lecture notes' },
+        { name: 'Model Question Paper Series', code: 'GEN-03', notes: 'Solved model papers with marking schemes' },
+        { name: 'Quick Exam Revision Deck', code: 'GEN-04', notes: 'Important formulas, terms & definitions sheet' }
+      ]
+    };
+
+    // --- INLINE SVG ICONS ---
+    const ChevronDown = ({ className = "w-4 h-4" }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    );
+    const MenuIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+    );
+    const XIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    );
+    const GlobeIcon = ({ className = "w-4 h-4" }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+    );
+    const GoogleIcon = () => (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+    );
+    const AppleIcon = () => (
+      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.09 2.31-.86 3.73-.8 1.61.1 2.76.71 3.52 1.83-3.22 1.95-2.69 5.96.48 7.18-.68 1.64-1.55 3.05-2.81 4.04zM12.03 7.25c-.15-3.47 2.91-6.15 6.13-6.25.39 3.63-3.4 6.34-6.13 6.25z"/></svg>
+    );
+    const FacebookIcon = () => (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    );
+
+    const gradients = {
+      primary: 'linear-gradient(to bottom, #2B2B2B, #101010)'
+    };
+
+    // --- LANGUAGE SELECTOR COMPONENT ---
+    const LanguageSelector = ({ currentLang, setLang, customLangs, onAddLanguage }) => {
+      const [isOpen, setIsOpen] = useState(false);
+
+      const langNames = {
+        en: 'English (US)',
+        ne: 'नेपाली (Nepali)',
+        hi: 'हिंदी (Hindi)',
+        es: 'Español (Spanish)',
+        ...customLangs
+      };
+
+      return (
+        <div className="relative inline-block text-left">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-medium text-white transition-colors backdrop-blur-md border border-white/10"
+          >
+            <GlobeIcon className="w-3.5 h-3.5" />
+            <span>{langNames[currentLang] || currentLang.toUpperCase()}</span>
+            <ChevronDown className="w-3 h-3" />
+          </button>
+
+          {isOpen && (
+            <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-[#0F0F0F] border border-white/15 shadow-2xl backdrop-blur-xl z-[70] overflow-hidden py-1">
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-white/40 uppercase tracking-wider">
+                Select Language
+              </div>
+              {Object.keys(langNames).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setLang(key);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between hover:bg-white/10 transition-colors ${
+                    currentLang === key ? 'text-white font-bold bg-white/5' : 'text-white/70'
+                  }`}
+                >
+                  <span>{langNames[key]}</span>
+                  {currentLang === key && <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>}
+                </button>
+              ))}
+              <div className="border-t border-white/10 my-1"></div>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onAddLanguage();
+                }}
+                className="w-full text-left px-4 py-2 text-xs text-white/90 hover:bg-white/10 transition-colors font-medium flex items-center gap-1"
+              >
+                <span>+ Add New Language</span>
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // --- AUTHENTICATION MODAL ---
+    const AuthModal = ({ isOpen, type, onClose, setType, onAuthSuccess, t }) => {
+      const [email, setEmail] = useState('');
+      if (!isOpen) return null;
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onAuthSuccess();
+      };
+
+      return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onClick={onClose} />
+          <div className="relative w-full max-w-md bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl z-10">
+            <button onClick={onClose} className="absolute top-5 right-5 text-white/50 hover:text-white transition-colors">
+              <XIcon className="w-5 h-5" />
+            </button>
+            
+            <h2 className="text-2xl font-semibold text-white tracking-tight mb-2">
+              {type === 'signup' ? t.signup : t.login}
+            </h2>
+            <p className="text-white/60 text-sm mb-6">
+              {type === 'signup' ? t.selectTrackSub : 'Log in to access your free courses and AI tools.'}
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <button onClick={onAuthSuccess} className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 text-white text-sm font-medium py-3 rounded-full transition-colors">
+                <GoogleIcon /> Continue with Google
+              </button>
+              <button onClick={onAuthSuccess} className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 text-white text-sm font-medium py-3 rounded-full transition-colors">
+                <AppleIcon /> Continue with Apple
+              </button>
+              <button onClick={onAuthSuccess} className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 text-white text-sm font-medium py-3 rounded-full transition-colors">
+                <FacebookIcon /> Continue with Facebook
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-px flex-1 bg-white/10"></div>
+              <span className="text-xs text-white/40 uppercase tracking-widest font-medium">Or</span>
+              <div className="h-px flex-1 bg-white/10"></div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input 
+                type="email" 
+                required
+                placeholder="student@example.edu" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
+              />
+              {type === 'signin' && (
+                <input 
+                  type="password" 
+                  required
+                  placeholder="Password" 
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
+                />
+              )}
+              <button 
+                type="submit"
+                style={{ background: gradients.primary }}
+                className="w-full rounded-full px-6 py-3.5 text-sm font-medium text-white hover:opacity-90 transition-opacity mt-2"
+              >
+                {type === 'signup' ? t.signup : t.login}
+              </button>
+            </form>
+
+            <p className="text-center text-sm text-white/60 mt-6">
+              {type === 'signup' ? 'Already have an account?' : "Don't have an account?"}{' '}
+              <button 
+                onClick={() => setType(type === 'signup' ? 'signin' : 'signup')}
+                className="text-white hover:underline font-medium"
+              >
+                {type === 'signup' ? t.login : t.signup}
+              </button>
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // --- MAIN APP COMPONENT ---
+    const App = () => {
+      // Views: 'hero' | 'onboarding' | 'dashboard'
+      const [view, setView] = useState('hero');
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [authModal, setAuthModal] = useState({ isOpen: false, type: 'signup' });
+      
+      // Translation state
+      const [lang, setLang] = useState('en');
+      const [translations, setTranslations] = useState(defaultTranslations);
+      const [customLangs, setCustomLangs] = useState({
+        fr: 'Français (French)',
+        de: 'Deutsch (German)'
+      });
+
+      // Selected study track & active dashboard tab
+      const [selectedTrack, setSelectedTrack] = useState(null);
+      const [dashboardTab, setDashboardTab] = useState('courses'); // courses, live, ai, chatbot, calendar, scoreboard
+      const [downloadMessage, setDownloadMessage] = useState('');
+
+      // Chatbot Messages State
+      const [chatMessages, setChatMessages] = useState([
+        { sender: 'bot', text: 'Hello! I am your Nexum AI Tutor. Ask me any question from your syllabus!' }
+      ]);
+      const [chatInput, setChatInput] = useState('');
+
+      const t = translations[lang] || translations.en;
+
+      // Handle Adding Custom Language
+      const handleAddLanguage = () => {
+        const langCode = prompt("Enter new language code (e.g. 'de', 'ja', 'fr'):", "de");
+        if (!langCode) return;
+        const langName = prompt("Enter full language display name:", "Deutsch");
+        if (!langName) return;
+
+        setCustomLangs(prev => ({ ...prev, [langCode]: langName }));
+        
+        // Copy english as base for new custom language
+        setTranslations(prev => ({
+          ...prev,
+          [langCode]: {
+            ...prev.en,
+            brand: "nexum (" + langName + ")",
+            getStarted: "Start (" + langCode + ")",
+            selectTrackTitle: "Choose Track (" + langName + ")"
+          }
+        }));
+        setLang(langCode);
+      };
+
+      const handleAuthSuccess = () => {
+        setAuthModal({ isOpen: false, type: 'signup' });
+        setView('onboarding');
+      };
+
+      const handleSelectTrack = (track) => {
+        setSelectedTrack(track);
+        setView('dashboard');
+      };
+
+      const handleSendMessage = (e) => {
+        e.preventDefault();
+        if (!chatInput.trim()) return;
+        const userMsg = chatInput;
+        setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+        setChatInput('');
+
+        setTimeout(() => {
+          setChatMessages(prev => [
+            ...prev, 
+            { sender: 'bot', text: `Here is the explanation for "${userMsg}": Check Section 3.2 in your syllabus. Need a step-by-step video breakdown or key summary notes?` }
+          ]);
+        }, 800);
+      };
+
+      const triggerDownload = (subjectName) => {
+        setDownloadMessage(`Downloading syllabus PDF & handwritten notes for "${subjectName}"...`);
+        setTimeout(() => setDownloadMessage(''), 4000);
+      };
+
+      return (
+        <div className="min-h-screen bg-brandDark text-white font-sans relative flex flex-col">
+
+          {/* ================= HERO SECTION ================= */}
+          {view === 'hero' && (
+            <section className="h-screen w-full overflow-hidden relative">
+              {/* Full-bleed Background Video */}
+              <video 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover z-0"
+              >
+                <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260803_192301_9231ed6b-c55c-4a48-909c-4ebe11cf2e11.mp4" type="video/mp4" />
+              </video>
+
+              {/* Main Content Layer */}
+              <div className="relative z-10 flex flex-col h-full">
+                
+                {/* Navbar */}
+                <nav className="flex items-center justify-between px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-6 h-6 fill-[#010101] lg:fill-white transition-colors duration-300" viewBox="0 0 256 256">
+                      <path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 0 0 C 70.692 0 128 57.308 128 128 C 57.308 128 0 70.692 0 0 Z M 256 0 C 256 70.692 198.692 128 128 128 C 128 57.308 185.308 0 256 0 Z"/>
+                    </svg>
+                    <span className="lowercase text-lg font-semibold text-[#010101] lg:text-white transition-colors duration-300 tracking-tight">
+                      {t.brand}
+                    </span>
+                  </div>
+
+                  {/* Desktop Nav Links + Language Switcher */}
+                  <div className="hidden md:flex items-center gap-3">
+                    <div className="flex items-center gap-1 rounded-full bg-white/10 px-1.5 py-1.5 backdrop-blur-lg">
+                      <a href="#" className="rounded-full px-4 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">{t.modules}</a>
+                      <a href="#" className="rounded-full px-4 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">{t.coursesTab}</a>
+                      <a href="#" className="flex items-center gap-1 rounded-full px-4 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">{t.solutions} <ChevronDown className="w-3.5 h-3.5" /></a>
+                      <a href="#" className="rounded-full px-4 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">{t.pricing}</a>
+                    </div>
+
+                    <LanguageSelector 
+                      currentLang={lang} 
+                      setLang={setLang} 
+                      customLangs={customLangs} 
+                      onAddLanguage={handleAddLanguage} 
+                    />
+
+                    <div className="flex items-center gap-2 ml-2">
+                      <button onClick={() => setAuthModal({ isOpen: true, type: 'signin' })} className="text-sm font-medium text-white/80 hover:text-white px-2 py-1.5">
+                        {t.login}
+                      </button>
+                      <button 
+                        onClick={() => setAuthModal({ isOpen: true, type: 'signup' })}
+                        style={{ background: gradients.primary }}
+                        className="rounded-full px-5 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                      >
+                        {t.signup}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Mobile Hamburger & Lang Switcher */}
+                  <div className="md:hidden flex items-center gap-2">
+                    <LanguageSelector currentLang={lang} setLang={setLang} customLangs={customLangs} onAddLanguage={handleAddLanguage} />
+                    <button 
+                      className="relative h-10 w-10 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center text-[#010101] lg:text-white"
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                      {isMenuOpen ? <XIcon /> : <MenuIcon />}
+                    </button>
+                  </div>
+                </nav>
+
+                {/* Mobile Side Drawer */}
+                {isMenuOpen && (
+                  <div className="md:hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-xl p-6 flex flex-col justify-between">
+                    <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                      <span className="text-xl font-bold">{t.brand}</span>
+                      <button onClick={() => setIsMenuOpen(false)}><XIcon /></button>
+                    </div>
+                    <div className="flex flex-col gap-4 text-lg font-medium my-auto">
+                      <a href="#" onClick={() => setIsMenuOpen(false)}>{t.modules}</a>
+                      <a href="#" onClick={() => setIsMenuOpen(false)}>{t.coursesTab}</a>
+                      <a href="#" onClick={() => setIsMenuOpen(false)}>{t.solutions}</a>
+                      <a href="#" onClick={() => setIsMenuOpen(false)}>{t.pricing}</a>
+                    </div>
+                    <div className="space-y-3">
+                      <button onClick={() => { setIsMenuOpen(false); setAuthModal({ isOpen: true, type: 'signin' }); }} className="w-full py-3 rounded-xl bg-white/10 text-center font-medium">{t.login}</button>
+                      <button onClick={() => { setIsMenuOpen(false); setAuthModal({ isOpen: true, type: 'signup' }); }} style={{ background: gradients.primary }} className="w-full py-3 rounded-xl text-center font-medium">{t.signup}</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottom Anchored Hero Content */}
+                <main className="mt-auto px-5 pb-8 sm:px-8 sm:pb-12 lg:px-12 lg:pb-16 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 sm:gap-8">
+                  <div className="max-w-2xl">
+                    <div className="inline-block px-3 py-1 mb-3 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-green-300 border border-white/10">
+                      {t.freeBadge}
+                    </div>
+                    <h1 className="text-3xl sm:text-4xl lg:text-[3.5rem] font-semibold leading-[1.1] tracking-tight text-[#010101] lg:text-white transition-colors duration-300">
+                      {t.tagline}
+                    </h1>
+                    <p className="mt-4 text-[#010101]/80 lg:text-white/80 text-sm sm:text-base transition-colors duration-300 font-medium">
+                      {t.subtext}
+                    </p>
+                    
+                    <div className="mt-6 flex flex-col sm:inline-flex sm:flex-row sm:items-center sm:rounded-full sm:bg-white sm:p-1.5 gap-3 sm:gap-0">
+                      <input 
+                        type="email" 
+                        placeholder="Type your student email" 
+                        className="rounded-full bg-white px-5 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none sm:w-64 sm:rounded-none sm:bg-transparent sm:px-4 sm:py-2"
+                      />
+                      <button 
+                        onClick={() => setAuthModal({ isOpen: true, type: 'signup' })}
+                        style={{ background: gradients.primary }}
+                        className="rounded-full px-6 py-3 sm:py-2.5 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                      >
+                        {t.getStarted}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column Cards */}
+                  <div className="flex flex-col gap-4 sm:flex-row lg:w-auto lg:gap-5 w-full">
+                    <div className="rounded-2xl bg-white/10 backdrop-blur-lg p-5 sm:p-6 sm:w-64 flex flex-col justify-between border border-white/5">
+                      <div className="font-silkscreen text-3xl sm:text-4xl font-normal tracking-tight text-[#010101] lg:text-white transition-colors duration-300">
+                        {t.statsNumber}
+                      </div>
+                      <p className="text-sm leading-relaxed mt-3 sm:mt-4 text-[#010101]/70 lg:text-white/70 transition-colors duration-300">
+                        {t.statsText}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl bg-white/10 backdrop-blur-lg p-5 sm:p-6 sm:w-64 border border-white/5">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <div className="w-6 h-6 rounded bg-[#010101] flex items-center justify-center text-white text-xs font-bold">S</div>
+                        <span className="text-sm font-semibold text-[#010101] lg:text-white transition-colors duration-300">Stratify</span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-[#010101]/80 lg:text-white/80 transition-colors duration-300">
+                        "{t.quote}"
+                      </p>
+                      <div className="flex items-center gap-3 mt-4 sm:mt-5">
+                        <img src="https://i.pravatar.cc/72?img=12" alt="Student" className="w-9 h-9 rounded-full object-cover bg-white/20" />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-[#010101] lg:text-white transition-colors duration-300">Sara Klein</span>
+                          <span className="text-xs text-[#010101]/60 lg:text-white/60 transition-colors duration-300">{t.studentRole}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </main>
+              </div>
+            </section>
+          )}
+
+          {/* ================= ONBOARDING: STUDY TRACK SELECTION ================= */}
+          {view === 'onboarding' && (
+            <div className="min-h-screen w-full flex flex-col bg-[#080808] relative overflow-y-auto px-4 py-8 sm:px-8">
+              <div className="max-w-5xl mx-auto w-full my-auto">
+                <div className="flex justify-between items-center mb-8">
+                  <div className="flex items-center gap-2">
+                    <span className="lowercase text-xl font-bold tracking-tight text-white">{t.brand}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-semibold">{t.freeBadge}</span>
+                  </div>
+                  <LanguageSelector currentLang={lang} setLang={setLang} customLangs={customLangs} onAddLanguage={handleAddLanguage} />
+                </div>
+
+                <div className="text-center max-w-2xl mx-auto mb-10">
+                  <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">{t.selectTrackTitle}</h2>
+                  <p className="text-white/60 mt-3 text-sm sm:text-base">{t.selectTrackSub}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {studyTracks.map((track) => (
+                    <div
+                      key={track.id}
+                      onClick={() => handleSelectTrack(track)}
+                      className="group cursor-pointer rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 p-5 transition-all duration-300 hover:border-white/30 hover:-translate-y-1 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="text-3xl mb-3">{track.icon}</div>
+                        <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">{track.title}</h3>
+                        <p className="text-xs text-white/60 mt-2 leading-relaxed">{track.desc}</p>
+                      </div>
+                      <div className="mt-5 flex items-center justify-between text-xs font-semibold text-white/40 group-hover:text-white transition-colors">
+                        <span>Select Program</span>
+                        <span>→</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= STUDENT DASHBOARD ================= */}
+          {view === 'dashboard' && selectedTrack && (
+            <div className="min-h-screen w-full bg-[#0A0A0A] flex flex-col">
+              
+              {/* Dashboard Header */}
+              <header className="border-b border-white/10 bg-black/50 backdrop-blur-lg sticky top-0 z-30 px-4 py-3 sm:px-8 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="lowercase text-xl font-bold text-white">{t.brand}</span>
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-medium">
+                    {selectedTrack.title}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <LanguageSelector currentLang={lang} setLang={setLang} customLangs={customLangs} onAddLanguage={handleAddLanguage} />
+                  <button 
+                    onClick={() => setView('onboarding')} 
+                    className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
+                  >
+                    {t.changeTrack}
+                  </button>
+                  <button onClick={() => setView('hero')} className="text-xs text-white/50 hover:text-white">Sign Out</button>
+                </div>
+              </header>
+
+              {/* Download Notification Banner */}
+              {downloadMessage && (
+                <div className="bg-green-600/90 text-white text-xs font-medium py-2 px-4 text-center backdrop-blur-md">
+                  ✓ {downloadMessage}
+                </div>
+              )}
+
+              {/* Dashboard Layout */}
+              <div className="flex-1 flex flex-col md:flex-row">
+                
+                {/* Sidebar Navigation */}
+                <aside className="w-full md:w-64 border-r border-white/10 bg-black/30 p-4 flex flex-row md:flex-col gap-2 overflow-x-auto">
+                  <button 
+                    onClick={() => setDashboardTab('courses')}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                      dashboardTab === 'courses' ? 'bg-white/15 text-white border border-white/10' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <span>📚</span> {t.tabCourses}
+                  </button>
+                  <button 
+                    onClick={() => setDashboardTab('live')}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                      dashboardTab === 'live' ? 'bg-white/15 text-white border border-white/10' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <span>🎥</span> {t.tabClasses}
+                  </button>
+                  <button 
+                    onClick={() => setDashboardTab('ai')}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                      dashboardTab === 'ai' ? 'bg-white/15 text-white border border-white/10' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <span>🤖</span> {t.tabAiTools}
+                  </button>
+                  <button 
+                    onClick={() => setDashboardTab('chatbot')}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                      dashboardTab === 'chatbot' ? 'bg-white/15 text-white border border-white/10' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <span>💬</span> {t.tabChatbot}
+                  </button>
+                  <button 
+                    onClick={() => setDashboardTab('calendar')}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                      dashboardTab === 'calendar' ? 'bg-white/15 text-white border border-white/10' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <span>📅</span> {t.tabCalendar}
+                  </button>
+                  <button 
+                    onClick={() => setDashboardTab('scoreboard')}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                      dashboardTab === 'scoreboard' ? 'bg-white/15 text-white border border-white/10' : 'text-white/60 hover:bg-white/5'
+                    }`}
+                  >
+                    <span>🏆</span> {t.tabScoreboard}
+                  </button>
+                </aside>
+
+                {/* Main Content Area */}
+                <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
+                  
+                  {/* TAB 1: COURSES & SUBJECTS */}
+                  {dashboardTab === 'courses' && (
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className="text-2xl font-bold text-white">{selectedTrack.title} — Subjects</h3>
+                          <p className="text-xs text-white/60 mt-1">Access full syllabus, chapterwise notes, and downloadable PDF packs.</p>
+                        </div>
+                        <span className="text-xs px-3 py-1 bg-green-500/20 text-green-400 rounded-full font-semibold">100% FREE</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(trackSubjects[selectedTrack.id] || trackSubjects.default).map((sub, idx) => (
+                          <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-xs text-blue-400 font-mono font-bold">{sub.code}</span>
+                              <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/70">Free Module</span>
+                            </div>
+                            <h4 className="text-lg font-semibold text-white mb-2">{sub.name}</h4>
+                            <p className="text-xs text-white/60 mb-4">{sub.notes}</p>
+                            
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={() => triggerDownload(sub.name)}
+                                className="flex-1 bg-white/10 hover:bg-white/20 text-white text-xs font-medium py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
+                              >
+                                📥 Download Notes (PDF)
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 2: ONLINE LIVE CLASSES */}
+                  {dashboardTab === 'live' && (
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">Live & Recorded Interactive Classes</h3>
+                      <p className="text-xs text-white/60 mb-6">Join live streaming sessions with expert instructors or watch past recordings anytime.</p>
+
+                      <div className="space-y-4">
+                        <div className="bg-gradient-to-r from-red-950/40 to-black border border-red-500/30 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                              <span className="text-xs font-bold text-red-400 uppercase tracking-wider">LIVE NOW</span>
+                            </div>
+                            <h4 className="text-xl font-bold text-white">{selectedTrack.title}: Advanced Problem Solving & Numerical Workshop</h4>
+                            <p className="text-xs text-white/60 mt-1">Host: Prof. Sharma • 420 Students Attending</p>
+                          </div>
+                          <button onClick={() => alert('Connecting to live class stream...')} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-full text-xs font-bold transition-colors">
+                            {t.joinLive}
+                          </button>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex justify-between items-center">
+                          <div>
+                            <span className="text-xs text-yellow-400 font-semibold">UPCOMING • Today 5:00 PM</span>
+                            <h4 className="text-base font-semibold text-white mt-1">Board Exam Revision & High-Yield MCQs</h4>
+                            <p className="text-xs text-white/50 mt-0.5">Instructor: Dr. K.C. Anita</p>
+                          </div>
+                          <button onClick={() => alert('Class reminder set!')} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-xs text-white">Set Reminder</button>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex justify-between items-center">
+                          <div>
+                            <span className="text-xs text-white/40 font-semibold">RECORDED • Yesterday</span>
+                            <h4 className="text-base font-semibold text-white mt-1">Full Chapter 4 & 5 Video Lecture</h4>
+                            <p className="text-xs text-white/50 mt-0.5">Duration: 1h 24m • HD Quality</p>
+                          </div>
+                          <button onClick={() => alert('Opening video recording player...')} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-xs text-white">{t.watchRecorded}</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 3: AI FOR STUDY HUB */}
+                  {dashboardTab === 'ai' && (
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">AI Tools Suite for Students</h3>
+                      <p className="text-xs text-white/60 mb-6">Choose from top artificial intelligence platforms optimized for research, coding, and problem solving.</p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                          { name: 'ChatGPT 4o', provider: 'OpenAI', desc: 'Best for essay writing, explanations, and language translation.', icon: '🟢', url: 'https://chatgpt.com' },
+                          { name: 'Claude 3.5 Sonnet', provider: 'Anthropic', desc: 'Superior for complex logic, math, and coding homework.', icon: '🟠', url: 'https://claude.ai' },
+                          { name: 'Gemini 1.5 Pro', provider: 'Google AI', desc: 'Directly reads textbook PDFs, images, and YouTube videos.', icon: '🔵', url: 'https://gemini.google.com' },
+                          { name: 'Perplexity AI', provider: 'Perplexity', desc: 'Real-time academic search with verified citations and sources.', icon: '🌐', url: 'https://perplexity.ai' },
+                          { name: 'DeepSeek R1', provider: 'DeepSeek', desc: 'Deep reasoning model for advanced STEM and math problems.', icon: '🐋', url: 'https://deepseek.com' },
+                          { name: 'Mistral AI', provider: 'Mistral', desc: 'Fast concise study summaries and flashcard generation.', icon: '⚡', url: 'https://chat.mistral.ai' }
+                        ].map((ai, i) => (
+                          <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col justify-between hover:border-white/25 transition-all">
+                            <div>
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-2xl">{ai.icon}</span>
+                                <span className="text-[10px] text-white/40 uppercase font-mono">{ai.provider}</span>
+                              </div>
+                              <h4 className="text-base font-bold text-white">{ai.name}</h4>
+                              <p className="text-xs text-white/60 mt-2 leading-relaxed">{ai.desc}</p>
+                            </div>
+                            <a 
+                              href={ai.url} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              className="mt-5 w-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-2.5 rounded-xl text-center transition-colors block"
+                            >
+                              Launch {ai.name} ↗
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 4: BUILT-IN NEXUM CHATBOT */}
+                  {dashboardTab === 'chatbot' && (
+                    <div className="h-[650px] bg-white/5 border border-white/10 rounded-3xl flex flex-col overflow-hidden">
+                      <div className="p-4 border-b border-white/10 bg-black/40 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                          <span className="font-bold text-sm">Nexum AI Personal Tutor</span>
+                        </div>
+                        <span className="text-xs text-white/40">Powered by Nexum Study Engine</span>
+                      </div>
+
+                      <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                        {chatMessages.map((msg, idx) => (
+                          <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed ${
+                              msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white/10 text-white/90 border border-white/10 rounded-bl-none'
+                            }`}>
+                              {msg.text}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-black/40 flex gap-2">
+                        <input 
+                          type="text" 
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          placeholder={t.askAi}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-white/30"
+                        />
+                        <button type="submit" className="bg-white text-black text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-white/90">
+                          Send
+                        </button>
+                      </form>
+                    </div>
+                  )}
+
+                  {/* TAB 5: CALENDAR & ATTENDANCE */}
+                  {dashboardTab === 'calendar' && (
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">{t.tabCalendar}</h3>
+                      <p className="text-xs text-white/60 mb-6">Track your daily attendance score, live class schedule, and upcoming board exams.</p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                          <span className="text-xs text-white/50">{t.attendanceRate}</span>
+                          <div className="text-3xl font-bold text-green-400 mt-2">94.8%</div>
+                          <p className="text-[10px] text-white/40 mt-1">28 / 30 Classes Attended</p>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                          <span className="text-xs text-white/50">{t.nextExam}</span>
+                          <div className="text-3xl font-bold text-yellow-400 mt-2">14 Days</div>
+                          <p className="text-[10px] text-white/40 mt-1">Final Board Assessment</p>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                          <span className="text-xs text-white/50">Completed Assignments</span>
+                          <div className="text-3xl font-bold text-blue-400 mt-2">18 / 20</div>
+                          <p className="text-[10px] text-white/40 mt-1">Top 5% of class</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <h4 className="text-sm font-bold text-white mb-4">Weekly Live Class Timetable</h4>
+                        <div className="space-y-3">
+                          {[
+                            { day: 'Monday', subject: 'Mathematics & Algebra', time: '07:00 AM - 08:30 AM', status: 'Completed' },
+                            { day: 'Wednesday', subject: 'Physics & Practical Lab', time: '08:00 AM - 09:30 AM', status: 'Completed' },
+                            { day: 'Friday', subject: 'Computer Science & AI', time: '05:00 PM - 06:30 PM', status: 'Scheduled' },
+                            { day: 'Saturday', subject: 'Mock Exam & Doubt Solving', time: '10:00 AM - 12:00 PM', status: 'Upcoming' }
+                          ].map((item, index) => (
+                            <div key={index} className="flex items-center justify-between py-2 border-b border-white/5 text-xs">
+                              <div>
+                                <span className="font-semibold text-white">{item.day}</span> — <span className="text-white/80">{item.subject}</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-white/50">{item.time}</span>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  item.status === 'Completed' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'
+                                }`}>{item.status}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 6: SCOREBOARD & PROGRESS */}
+                  {dashboardTab === 'scoreboard' && (
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">{t.tabScoreboard}</h3>
+                      <p className="text-xs text-white/60 mb-6">Your real-time academic rank, quiz scores, and learning streak.</p>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6 flex flex-wrap justify-between items-center gap-4">
+                        <div>
+                          <span className="text-xs text-white/50">Your Rank</span>
+                          <div className="text-3xl font-extrabold text-yellow-400 mt-1">#4 in Class</div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-white/50">Study Streak</span>
+                          <div className="text-3xl font-extrabold text-orange-400 mt-1">🔥 12 Days</div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-white/50">Total XP Points</span>
+                          <div className="text-3xl font-extrabold text-purple-400 mt-1">4,850 XP</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <h4 className="text-sm font-bold text-white mb-4">Class Leaderboard (Top Performers)</h4>
+                        <div className="space-y-3">
+                          {[
+                            { rank: '1', name: 'Aarav Sharma', xp: '5,420 XP', badge: '🥇 Gold' },
+                            { rank: '2', name: 'Priya Patel', xp: '5,100 XP', badge: '🥈 Silver' },
+                            { rank: '3', name: 'Rohan Shrestha', xp: '4,980 XP', badge: '🥉 Bronze' },
+                            { rank: '4', name: 'Sara Klein (You)', xp: '4,850 XP', badge: '⭐ Top 5' }
+                          ].map((user, idx) => (
+                            <div key={idx} className={`flex justify-between items-center p-3 rounded-xl text-xs ${
+                              user.name.includes('You') ? 'bg-blue-600/30 border border-blue-500/40' : 'bg-white/5'
+                            }`}>
+                              <div className="flex items-center gap-3">
+                                <span className="font-bold w-4 text-center">{user.rank}</span>
+                                <span className="font-semibold text-white">{user.name}</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <span className="text-white/60">{user.xp}</span>
+                                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded">{user.badge}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </main>
+              </div>
+            </div>
+          )}
+
+          {/* Auth Modal */}
+          <AuthModal 
+            isOpen={authModal.isOpen} 
+            type={authModal.type}
+            setType={(type) => setAuthModal({ ...authModal, type })}
+            onClose={() => setAuthModal({ ...authModal, isOpen: false })} 
+            onAuthSuccess={handleAuthSuccess}
+            t={t}
+          />
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
